@@ -9,40 +9,43 @@ edo()
 edo rm .available-versions
 edo rm .download-urls
 
+export BOOTSTRAP_HASKELL_NO_UPGRADE=1
+export BOOTSTRAP_HASKELL_NONINTERACTIVE=1
+export PATH="$HOME/.cabal/bin:$HOME/.ghcup/bin:$HOME/.local/bin:$PATH"
+edo mkdir -p "$HOME"/.ghcup/bin
+edo cp ./ghcup "$HOME"/.ghcup/bin/ghcup
+
+edo ./bootstrap-haskell
+
 # install GHCs
-edo ./ghcup -v install 8.2.2
-edo ./ghcup -v install 8.4.3
-edo ./ghcup -v -c install 8.6.1
+edo ghcup -v install -f 8.2.2
+edo ghcup -v install -f 8.4.3
+edo ghcup -v -c install -f 8.6.1
 
 # set GHC
-edo ./ghcup -v set 8.6.1
-edo ./ghcup -v set 8.4.3
+edo ghcup -v set 8.6.1
+edo ghcup -v set 8.4.3
 
 # rm GHC
-edo ./ghcup -v rm -f 8.6.1
-edo ./ghcup -v rm -f 8.4.3
+edo ghcup -v rm -f 8.6.1
+edo ghcup -v rm -f 8.4.3
 
 # reinstall from cached tarball
-edo ./ghcup -v -c install 8.6.1
-edo ./ghcup -v rm -f 8.6.1
+edo ghcup -v -c install 8.6.1
+edo ghcup -v rm -f 8.6.1
 
 # set GHC
-edo ./ghcup -v set 8.2.2
-edo ./ghcup -v rm -f 8.2.2
+edo ghcup -v set 8.2.2
+edo ghcup -v rm -f 8.2.2
 
 # install default GHC
-edo ./ghcup -v install
+edo ghcup -v install
 
 # install latest GHC
-edo ./ghcup -v install latest
+edo ghcup -v install latest
 
 # FIXME: this might break from time to time depending on recommended GHC
-edo ./ghcup -v set 8.4.4
-
-export PATH="$HOME/.cabal/bin:$HOME/.ghcup/bin:$HOME/.local/bin:$PATH"
-edo mkdir -p "$HOME"/.local/bin
-
-edo cp ./ghcup "$HOME"/.local/bin/ghcup
+edo ghcup -v set 8.4.4
 
 # TODO: exceeds maximum time limit of travis
 # compile GHC from source

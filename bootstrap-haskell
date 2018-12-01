@@ -1,0 +1,68 @@
+#!/bin/sh
+
+_die() {
+    (>&2 printf "\\033[0;31m%s\\033[0m\\n" "$1")
+    exit 2
+}
+
+_edo()
+{
+	printf "\\033[0;35m%s\\033[0m\\n" "$*" 1>&2
+    "$@" || exit 2
+}
+
+echo
+echo "Welcome to Haskell!"
+echo
+echo "This will download and install the Glasgow Haskell Compiler (GHC) for "
+echo "the Haskell programming language, and the Cabal build tool."
+echo
+echo "It will add the 'cabal', 'ghc', and 'ghcup' executables to bin directory "
+echo "located at: "
+echo
+echo "  $HOME/.ghcup/bin"
+echo
+echo "and create the environment file $HOME/.ghcup/env"
+echo "which you should source in your ~/.bashrc or similar to get the required"
+echo "PATH components."
+echo
+
+if [ -z "${BOOTSTRAP_HASKELL_NONINTERACTIVE}" ] ; then
+	echo "To proceed with the installation press enter, to cancel press ctrl-c."
+	echo "Note that this script can be re-run at any given time."
+	echo
+
+	# Wait for user input to continue.
+	# shellcheck disable=SC2034
+	read -r answer
+fi
+
+mkdir -p "${HOME}"/.ghcup/bin || _die "\"mkdir -p ${HOME}/.ghcup/bin\" failed"
+
+if command -V "ghcup" >/dev/null 2>&1 ; then
+	if [ -z "${BOOTSTRAP_HASKELL_NO_UPGRADE}" ] ; then
+		_edo ghcup upgrade
+	fi
+else
+	_edo curl https://raw.githubusercontent.com/haskell/ghcup/master/ghcup > "${HOME}"/.ghcup/bin/ghcup
+	_edo chmod +x "${HOME}"/.ghcup/bin/ghcup
+
+	cat <<-EOF > "${HOME}"/.ghcup/env || _die "Failed to create env file"
+		export PATH="\$HOME/.cabal/bin:\$HOME/.ghcup/bin:\$PATH"
+		EOF
+	# shellcheck disable=SC1090
+	_edo . "${HOME}"/.ghcup/env
+fi
+
+_edo ghcup install
+
+_edo ghcup set
+_edo ghcup install-cabal
+
+_edo cabal new-update
+_edo cabal new-install --symlink-bindir="$HOME/.cabal/bin" cabal-install
+
+echo "Installation done!"
+echo ""
+echo "Don't forget to source $HOME/.ghcup/env in your ~/.bashrc or similar."
+echo ""
